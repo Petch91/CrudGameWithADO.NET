@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace GamesDataAccessLayer
 {
@@ -110,5 +112,22 @@ namespace GamesDataAccessLayer
             return list;
          }
       }
+      //public IEnumerable<object> GetGamesByCat()
+      //{
+      //   CategorieService categorieService = new CategorieService();
+      //   var query = GetGames().SelectMany(g => g.Categories, (g, c) => new
+      //                           {
+      //                              IdGame = g.Id,
+      //                              g.Titre,
+      //                              g.AnneeSortie,
+      //                              g.Synopsis,
+      //                              IdCat = c.Id,
+      //                              c.Name
+      //                           })
+      //                           .Distinct();
+      //  var result = categorieService.GetCategorie().GroupJoin(query, c => c.Id, g => g.IdCat, (c, g) => new { c.Name, game = g })
+      //                                                .Where(g => g.game.Count() > 0);
+      //   return result;
+      //}
    }
 }

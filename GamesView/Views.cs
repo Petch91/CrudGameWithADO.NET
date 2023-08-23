@@ -19,7 +19,7 @@ namespace GamesView
             Console.WriteLine("Que voulez vous faire ? ");
             Console.WriteLine("1 - Ajouter un jeu");
             Console.WriteLine("2 - Afficher les Jeux");
-            Console.WriteLine("3 - Terminer une tache");
+            Console.WriteLine("3 - Afficher les jeux par catégorie");
             Console.WriteLine("4 - Ajouter  une catégorie");
             Console.WriteLine("5 - Afficher les catégories");
             Console.WriteLine("6 - Modifier  une catégorie");
@@ -36,7 +36,8 @@ namespace GamesView
                   Console.ReadKey();
                   break;
                case 3:
-
+                  ViewGamesByCategorie();
+                  Console.ReadKey();
                   break;
                case 4:
                   AddCat();
@@ -61,8 +62,27 @@ namespace GamesView
       private void ViewGamesByCategorie()
       {
          GameService gameService = new GameService();
-         CategorieService  categorieService = new CategorieService();
-         var test = categorieService.GetCategorie().GroupJoin(gameService.GetGames().Select(g => new {g.Titre,g.AnneeSortie,g.Synopsis, IdCat = g.Categories.Select(s => s.Id)}), c => c.Id, g => g.IdCat, (c, g) => new { nom =c.Name, game = g });
+         CategorieService categorieService = new CategorieService();
+         var query = gameService.GetGames().SelectMany(g => g.Categories, (g, c) => new
+         {
+            IdGame = g.Id,
+            g.Titre,
+            g.AnneeSortie,
+            g.Synopsis,
+            IdCat = c.Id,
+            c.Name
+         })
+                                 .Distinct();
+         var result = categorieService.GetCategorie().GroupJoin(query, c => c.Id, g => g.IdCat, (c, g) => new { c.Name, game = g })
+                                                       .Where(g => g.game.Count() > 0);
+         foreach (var c in result)
+         {
+            Console.WriteLine(c.Name);
+            foreach (var g in c.game)
+            {
+               Console.WriteLine("\t" + g.Titre);
+            }
+         }
       }
 
 
@@ -73,7 +93,7 @@ namespace GamesView
          Console.WriteLine("Liste des jeux:");
          foreach (Game g in service.GetGames())
          {
-            Console.Write($"Titre : {g.Titre} - Année de sortie :  {g.AnneeSortie} - Synopsis : {g.Synopsis} {(g.Categories.Count>0 ? g.Categories[0].Name : "rien")}");
+            Console.Write($"Titre : {g.Titre} - Année de sortie :  {g.AnneeSortie} - Synopsis : {g.Synopsis} {(g.Categories.Count > 0 ? g.Categories[0].Name : "rien")}");
             Console.WriteLine();
          }
       }
