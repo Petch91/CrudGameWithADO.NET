@@ -13,7 +13,7 @@ namespace GamesDataAccessLayer
       {
          using (SqlConnection cnx = new SqlConnection(_connectionString))
          {
-            
+
             using (SqlCommand cmd = cnx.CreateCommand())
             {
                string sql = "INSERT INTO Jeu (Titre,AnneeSortie,Synopsis) VALUES (@titre,@date,@desc) SELECT TOP 1 IdGame FROM Jeu ORDER BY IdGame DESC";
@@ -53,6 +53,61 @@ namespace GamesDataAccessLayer
                   cnx.Close();
                }
             }
+         }
+      }
+      public List<Game> GetGames()
+      {
+         List<Game> list = new List<Game>();
+         using (SqlConnection cnx = new SqlConnection(_connectionString))
+         {
+
+            using (SqlCommand cmd = cnx.CreateCommand())
+            {
+               string sql = "SELECT * FROM  Jeu";
+
+               cmd.CommandText = sql;
+               cnx.Open();
+               using (SqlDataReader reader = cmd.ExecuteReader())
+               {
+                  while (reader.Read())
+                  {
+
+                     list.Add(new Game
+                     {
+                        Id = (int)reader["IdGame"],
+                        Titre = (string)reader["Titre"],
+                        Synopsis = (string)reader["Synopsis"],
+                        AnneeSortie = (DateTime)reader["AnneeSortie"]
+                     });
+                  }
+                  cnx.Close();
+               }
+            }
+            List<Categorie> list2 = new List<Categorie>();
+            for (int i = 0; i < list.Count; i++)
+            {
+               using (SqlCommand cmd = cnx.CreateCommand())
+               {
+                  string sql = "SELECT * FROM Categorie WHERE IdCat in (SELECT IdCat FROM  JeuCat WHERE IdGame = @id)";
+                  cmd.CommandText = sql;
+                  cmd.Parameters.AddWithValue("id", list[i].Id);
+                  cnx.Open();
+                  using (SqlDataReader reader = cmd.ExecuteReader())
+                  {
+                     while (reader.Read())
+                     {
+                        list2.Add(new Categorie
+                        {
+                           Id = (int)reader["IdCat"],
+                           Name = (string)reader["Nom"],
+                        });
+                     }
+                     list[i].Categories.AddRange(list2);
+                     cnx.Close();
+                  }
+               }
+            }
+            return list;
          }
       }
    }

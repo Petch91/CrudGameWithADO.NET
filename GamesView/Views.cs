@@ -18,7 +18,7 @@ namespace GamesView
             Console.Clear();
             Console.WriteLine("Que voulez vous faire ? ");
             Console.WriteLine("1 - Ajouter un jeu");
-            Console.WriteLine("2 - Creer une tache");
+            Console.WriteLine("2 - Afficher les Jeux");
             Console.WriteLine("3 - Terminer une tache");
             Console.WriteLine("4 - Ajouter  une catégorie");
             Console.WriteLine("5 - Afficher les catégories");
@@ -32,7 +32,8 @@ namespace GamesView
                   AddGame();
                   break;
                case 2:
-
+                  ViewGame();
+                  Console.ReadKey();
                   break;
                case 3:
 
@@ -57,6 +58,26 @@ namespace GamesView
 
       }
 
+      private void ViewGamesByCategorie()
+      {
+         GameService gameService = new GameService();
+         CategorieService  categorieService = new CategorieService();
+         var test = categorieService.GetCategorie().GroupJoin(gameService.GetGames().Select(g => new {g.Titre,g.AnneeSortie,g.Synopsis, IdCat = g.Categories.Select(s => s.Id)}), c => c.Id, g => g.IdCat, (c, g) => new { nom =c.Name, game = g });
+      }
+
+
+      private void ViewGame()
+      {
+         Console.Clear();
+         GameService service = new GameService();
+         Console.WriteLine("Liste des jeux:");
+         foreach (Game g in service.GetGames())
+         {
+            Console.Write($"Titre : {g.Titre} - Année de sortie :  {g.AnneeSortie} - Synopsis : {g.Synopsis} {(g.Categories.Count>0 ? g.Categories[0].Name : "rien")}");
+            Console.WriteLine();
+         }
+      }
+
       private void AddGame()
       {
          Console.Clear();
@@ -73,8 +94,8 @@ namespace GamesView
             Categorie categorie = new Categorie();
             Console.Write($"Entrez la categorie({i}) (Appuyer sur ENTER sans rien rentrer pour ajouter le jeu) : ");
             i++;
-            string result = Console.ReadLine()  ?? string.Empty;
-            if (result == string.Empty) break;
+            string result = Console.ReadLine() ?? string.Empty;
+            if (result == string.Empty) break; // je sais c'est  pas une bonne pratique
             categorie.Name = result;
             game.Categories.Add(categorie);
          } while (true);
