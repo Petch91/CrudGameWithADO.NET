@@ -1,0 +1,7 @@
+﻿CREATE TABLE [dbo].[Jeu]
+(
+	[IdGame] INT NOT NULL PRIMARY KEY IDENTITY, 
+    [Titre] VARCHAR(50) NOT NULL, 
+    [AnneeSortie] DATETIME2 NOT NULL, 
+    [Synopsis] VARCHAR(250) NOT NULL, 
+)
