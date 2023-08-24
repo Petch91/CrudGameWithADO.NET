@@ -20,10 +20,11 @@ namespace GamesView
             Console.WriteLine("1 - Ajouter un jeu");
             Console.WriteLine("2 - Afficher les Jeux");
             Console.WriteLine("3 - Afficher les jeux par catégorie");
-            Console.WriteLine("4 - Ajouter  une catégorie");
-            Console.WriteLine("5 - Afficher les catégories");
-            Console.WriteLine("6 - Modifier  une catégorie");
-            Console.WriteLine("7 - Quitter");
+            Console.WriteLine("4 - Afficher les détails d'un jeu");
+            Console.WriteLine("5 - Ajouter  une catégorie");
+            Console.WriteLine("6 - Afficher les catégories");
+            Console.WriteLine("7 - Modifier  une catégorie");
+            Console.WriteLine("8 - Quitter");
             choix = int.Parse(Console.ReadLine());
             Console.Clear();
             switch (choix)
@@ -40,14 +41,18 @@ namespace GamesView
                   Console.ReadKey();
                   break;
                case 4:
+                  ViewDetailledGame();
+                  Console.ReadKey();
+                  break;
+               case 5:
                   AddCat();
                   break;
 
-               case 5:
+               case 6:
                   ViewsCategories();
                   Console.ReadKey();
                   break;
-               case 6:
+               case 7:
                   ModifyCategorie();
                   break;
 
@@ -57,6 +62,21 @@ namespace GamesView
 
          }
 
+      }
+
+      private void ViewDetailledGame()
+      {
+         GameService gameService = new GameService();
+         ViewGame();
+         Console.Write("Entrez l'ID du jeu que vous voulez afficher : ");
+         int ID = int.Parse(Console.ReadLine());
+         Game game = gameService.GetGameById(ID);
+         Console.Write($"Titre : {game.Titre} - Synopsis : {game.Synopsis} " +
+                       $"- Année de sortie : {game.AnneeSortie:dd/MM/yyyy} - Catégorie(s) :");
+         foreach (Categorie c in game.Categories)
+         {
+            Console.Write($" {c.Id}: {c.Name}");
+         }
       }
 
       private void ViewGamesByCategorie()
@@ -72,7 +92,7 @@ namespace GamesView
             IdCat = c.Id,
             c.Name
          })
-                                 .Distinct();
+                                           .Distinct();
          var result = categorieService.GetCategorie().GroupJoin(query, c => c.Id, g => g.IdCat, (c, g) => new { c.Name, game = g })
                                                        .Where(g => g.game.Count() > 0);
          foreach (var c in result)
@@ -93,7 +113,7 @@ namespace GamesView
          Console.WriteLine("Liste des jeux:");
          foreach (Game g in service.GetGames())
          {
-            Console.Write($"Titre : {g.Titre} - Année de sortie :  {g.AnneeSortie} - Synopsis : {g.Synopsis} {(g.Categories.Count > 0 ? g.Categories[0].Name : "rien")}");
+            Console.Write($"ID : {g.Id} - Titre : {g.Titre} - Année de sortie :  {g.AnneeSortie:dd/MM/yyyy}");
             Console.WriteLine();
          }
       }
@@ -102,6 +122,7 @@ namespace GamesView
       {
          Console.Clear();
          GameService service = new GameService();
+         CategorieService categorieService = new CategorieService();
          Game game = new Game();
          Console.Write("Entrez le titre du jeu : ");
          game.Titre = Console.ReadLine();
@@ -113,11 +134,15 @@ namespace GamesView
          {
             Categorie categorie = new Categorie();
             Console.Write($"Entrez la categorie({i}) (Appuyer sur ENTER sans rien rentrer pour ajouter le jeu) : ");
-            i++;
-            string result = Console.ReadLine() ?? string.Empty;
+            string result = Console.ReadLine().ToLower() ?? string.Empty;
             if (result == string.Empty) break; // je sais c'est  pas une bonne pratique
-            categorie.Name = result;
-            game.Categories.Add(categorie);
+            if(categorieService.GetCategorie().Where(c => c.Name == result).Count() >0)
+            {
+               categorie.Name = result;
+               game.Categories.Add(categorie);
+               i++;
+            }
+
          } while (true);
          service.CreateGame(game);
       }

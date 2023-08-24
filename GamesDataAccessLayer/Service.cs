@@ -8,6 +8,6 @@ namespace GamesDataAccessLayer
 {
    public class Service
    {
-      protected string _connectionString = @"Data Source=DESKTOP-T1P11FV;Initial Catalog=GameDB;Integrated Security=True;";
+      protected string _connectionString = @"Data Source=DESKTOP-9B27V2B;Initial Catalog=GameDB;Integrated Security=True;";
    }
 }

@@ -69,5 +69,6 @@
   <ItemGroup>
     <None Include="GamesDB.publish.xml" />
     <None Include="NewGamesDB.publish.publish.xml" />
+    <None Include="NewGamesDB.publish.xml" />
   </ItemGroup>
 </Project>

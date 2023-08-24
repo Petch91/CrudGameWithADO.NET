@@ -85,9 +85,10 @@ namespace GamesDataAccessLayer
                   cnx.Close();
                }
             }
-            List<Categorie> list2 = new List<Categorie>();
+
             for (int i = 0; i < list.Count; i++)
             {
+               List<Categorie> list2 = new List<Categorie>();
                using (SqlCommand cmd = cnx.CreateCommand())
                {
                   string sql = "SELECT * FROM Categorie WHERE IdCat in (SELECT IdCat FROM  JeuCat WHERE IdGame = @id)";
@@ -111,6 +112,10 @@ namespace GamesDataAccessLayer
             }
             return list;
          }
+      }
+      public Game GetGameById(int id)
+      {
+         return GetGames().Where(g => g.Id == id).FirstOrDefault();
       }
       //public IEnumerable<object> GetGamesByCat()
       //{
