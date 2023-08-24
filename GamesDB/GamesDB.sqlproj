@@ -57,11 +57,13 @@
   <ItemGroup>
     <Folder Include="Properties" />
     <Folder Include="Tables" />
+    <Folder Include="Views" />
   </ItemGroup>
   <ItemGroup>
     <Build Include="Tables\Jeu.sql" />
     <Build Include="Tables\Categorie.sql" />
     <Build Include="Tables\JeuCat.sql" />
+    <Build Include="Views\JeuxCategories.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="GamesDB.refactorlog" />

@@ -65,7 +65,7 @@ namespace GamesDataAccessLayer
 
             using (SqlCommand cmd = cnx.CreateCommand())
             {
-               string sql = "SELECT * FROM  Jeu";
+               string sql = "SELECT IdGame, Titre, AnneeSortie FROM  Jeu";
 
                cmd.CommandText = sql;
                cnx.Open();
@@ -78,36 +78,39 @@ namespace GamesDataAccessLayer
                      {
                         Id = (int)reader["IdGame"],
                         Titre = (string)reader["Titre"],
-                        Synopsis = (string)reader["Synopsis"],
                         AnneeSortie = (DateTime)reader["AnneeSortie"]
                      });
                   }
                   cnx.Close();
                }
             }
+            return list;
+         }
+      }
+      public List<Game> GetGamesByCat(Categorie c)
+      {
+         List<Game> list = new List<Game>();
+         using (SqlConnection cnx = new SqlConnection(_connectionString))
+         {
 
-            for (int i = 0; i < list.Count; i++)
+            using (SqlCommand cmd = cnx.CreateCommand())
             {
-               List<Categorie> list2 = new List<Categorie>();
-               using (SqlCommand cmd = cnx.CreateCommand())
+               string sql = "SELECT Titre FROM  JeuxCategories WHERE IdCat = @id";
+
+               cmd.CommandText = sql;
+               cmd.Parameters.AddWithValue("id", c.Id);
+               cnx.Open();
+               using (SqlDataReader reader = cmd.ExecuteReader())
                {
-                  string sql = "SELECT * FROM Categorie WHERE IdCat in (SELECT IdCat FROM  JeuCat WHERE IdGame = @id)";
-                  cmd.CommandText = sql;
-                  cmd.Parameters.AddWithValue("id", list[i].Id);
-                  cnx.Open();
-                  using (SqlDataReader reader = cmd.ExecuteReader())
+                  while (reader.Read())
                   {
-                     while (reader.Read())
-                     {
-                        list2.Add(new Categorie
+                        list.Add(new Game
                         {
-                           Id = (int)reader["IdCat"],
-                           Name = (string)reader["Nom"],
+                           Titre = (string)reader["Titre"]
+
                         });
-                     }
-                     list[i].Categories.AddRange(list2);
-                     cnx.Close();
                   }
+                  cnx.Close();
                }
             }
             return list;
@@ -115,7 +118,36 @@ namespace GamesDataAccessLayer
       }
       public Game GetGameById(int id)
       {
-         return GetGames().Where(g => g.Id == id).FirstOrDefault();
+         Game g = new Game();
+         using (SqlConnection cnx = new SqlConnection(_connectionString))
+         {
+
+            using (SqlCommand cmd = cnx.CreateCommand())
+            {
+               string sql = "SELECT * FROM  JeuxCategories WHERE IdGame = @id";
+
+               cmd.CommandText = sql;
+               cmd.Parameters.AddWithValue("id",id);
+               cnx.Open();
+               using (SqlDataReader reader = cmd.ExecuteReader())
+               {
+                  while (reader.Read())
+                  {
+                     if (g.Titre != reader["Titre"].ToString())
+                     {
+                        
+                        g.Titre = reader["Titre"].ToString();
+                        g.Synopsis = reader["Synopsis"].ToString();
+                        g.AnneeSortie = (DateTime)reader["AnneeSortie"];
+
+                     }
+                     g.Categories.Add(new Categorie { Name = reader["Nom"].ToString(), Id = (int)reader["IdCat"] });
+                  }
+                  cnx.Close();
+               }
+            }
+            return g;
+         }
       }
       //public IEnumerable<object> GetGamesByCat()
       //{

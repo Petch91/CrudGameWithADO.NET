@@ -71,8 +71,8 @@ namespace GamesView
          Console.Write("Entrez l'ID du jeu que vous voulez afficher : ");
          int ID = int.Parse(Console.ReadLine());
          Game game = gameService.GetGameById(ID);
-         Console.Write($"Titre : {game.Titre} - Synopsis : {game.Synopsis} " +
-                       $"- Année de sortie : {game.AnneeSortie:dd/MM/yyyy} - Catégorie(s) :");
+         Console.Write($"\nTitre : {game.Titre}\nSynopsis : {game.Synopsis} " +
+                       $"\nAnnée de sortie : {game.AnneeSortie:dd/MM/yyyy}\nCatégorie(s) :");
          foreach (Categorie c in game.Categories)
          {
             Console.Write($" {c.Id}: {c.Name}");
@@ -83,26 +83,19 @@ namespace GamesView
       {
          GameService gameService = new GameService();
          CategorieService categorieService = new CategorieService();
-         var query = gameService.GetGames().SelectMany(g => g.Categories, (g, c) => new
+         foreach (Categorie c in categorieService.GetCategorie())
          {
-            IdGame = g.Id,
-            g.Titre,
-            g.AnneeSortie,
-            g.Synopsis,
-            IdCat = c.Id,
-            c.Name
-         })
-                                           .Distinct();
-         var result = categorieService.GetCategorie().GroupJoin(query, c => c.Id, g => g.IdCat, (c, g) => new { c.Name, game = g })
-                                                       .Where(g => g.game.Count() > 0);
-         foreach (var c in result)
-         {
-            Console.WriteLine(c.Name);
-            foreach (var g in c.game)
+            var games = gameService.GetGamesByCat(c).Select(g => new { g.Titre });
+            if (games.Count() > 0)
             {
-               Console.WriteLine("\t" + g.Titre);
+               Console.WriteLine($"{c.Name} : ");
+               foreach (var g in games)
+               {
+                  Console.WriteLine($"\t{g.Titre}");
+               }
             }
          }
+
       }
 
 
@@ -136,7 +129,7 @@ namespace GamesView
             Console.Write($"Entrez la categorie({i}) (Appuyer sur ENTER sans rien rentrer pour ajouter le jeu) : ");
             string result = Console.ReadLine().ToLower() ?? string.Empty;
             if (result == string.Empty) break; // je sais c'est  pas une bonne pratique
-            if(categorieService.GetCategorie().Where(c => c.Name == result).Count() >0)
+            if (categorieService.GetCategorie().Where(c => c.Name == result).Count() > 0)
             {
                categorie.Name = result;
                game.Categories.Add(categorie);
