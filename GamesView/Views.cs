@@ -1,4 +1,5 @@
-﻿using GamesDataAccessLayer;
+﻿using GamesDataAccessLayer.Class;
+using GamesDataAccessLayer.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,7 +14,7 @@ namespace GamesView
       {
          int choix = 0;
 
-         while (choix < 7)
+         while (choix < 9)
          {
             Console.Clear();
             Console.WriteLine("Que voulez vous faire ? ");
@@ -24,7 +25,8 @@ namespace GamesView
             Console.WriteLine("5 - Ajouter  une catégorie");
             Console.WriteLine("6 - Afficher les catégories");
             Console.WriteLine("7 - Modifier  une catégorie");
-            Console.WriteLine("8 - Quitter");
+            Console.WriteLine("8 - Filtrer par une catégorie");
+            Console.WriteLine("9 - Quitter");
             choix = int.Parse(Console.ReadLine());
             Console.Clear();
             switch (choix)
@@ -55,6 +57,10 @@ namespace GamesView
                case 7:
                   ModifyCategorie();
                   break;
+               case 8:
+                  FilterByCategorie();
+                  Console.ReadKey();
+                  break;
 
                default:
                   break;
@@ -62,6 +68,25 @@ namespace GamesView
 
          }
 
+      }
+
+      private void FilterByCategorie()
+      {
+         GameService gameService = new GameService();
+         CategorieService categorieService = new CategorieService();
+         ViewsCategories();
+         Console.WriteLine("Entrez l'id de la catégorie par la quelle filtrer: ");
+         int Id = int.Parse(Console.ReadLine());
+         Categorie c = categorieService.GetByID(Id);
+         var games = gameService.GetGamesByCat(c).Select(g => new { g.Titre });
+         Console.WriteLine($"{c.Name} : ");
+         if (games.Count() > 0)
+         {
+            foreach (var g in games)
+            {
+               Console.WriteLine($"\t{g.Titre}");
+            }
+         }
       }
 
       private void ViewDetailledGame()
@@ -83,7 +108,7 @@ namespace GamesView
       {
          GameService gameService = new GameService();
          CategorieService categorieService = new CategorieService();
-         foreach (Categorie c in categorieService.GetCategorie())
+         foreach (Categorie c in categorieService.GetAll())
          {
             var games = gameService.GetGamesByCat(c).Select(g => new { g.Titre });
             if (games.Count() > 0)
@@ -104,7 +129,7 @@ namespace GamesView
          Console.Clear();
          GameService service = new GameService();
          Console.WriteLine("Liste des jeux:");
-         foreach (Game g in service.GetGames())
+         foreach (Game g in service.GetAll())
          {
             Console.Write($"ID : {g.Id} - Titre : {g.Titre} - Année de sortie :  {g.AnneeSortie:dd/MM/yyyy}");
             Console.WriteLine();
@@ -129,7 +154,7 @@ namespace GamesView
             Console.Write($"Entrez la categorie({i}) (Appuyer sur ENTER sans rien rentrer pour ajouter le jeu) : ");
             string result = Console.ReadLine().ToLower() ?? string.Empty;
             if (result == string.Empty) break; // je sais c'est  pas une bonne pratique
-            if (categorieService.GetCategorie().Where(c => c.Name == result).Count() > 0)
+            if (categorieService.GetAll().Where(c => c.Name == result).Count() > 0)
             {
                categorie.Name = result;
                game.Categories.Add(categorie);
@@ -137,7 +162,7 @@ namespace GamesView
             }
 
          } while (true);
-         service.CreateGame(game);
+         service.Create(game);
       }
 
       private void ModifyCategorie()
@@ -149,7 +174,11 @@ namespace GamesView
          int id = int.Parse(Console.ReadLine());
          Console.Write("Quel est le nouveau nom? : ");
          string name = Console.ReadLine();
-         service.Update(id, name);
+         if (service.GetAll().Where(c => c.Name == name).Count() == 0)
+         {
+            service.Update(id, name);
+         }
+
       }
 
       private void ViewsCategories()
@@ -157,7 +186,7 @@ namespace GamesView
          Console.Clear();
          CategorieService service = new CategorieService();
          Console.WriteLine("Liste des catégories:");
-         foreach (Categorie c in service.GetCategorie())
+         foreach (Categorie c in service.GetAll())
          {
             Console.WriteLine($"ID : {c.Id} - Nom : {c.Name}");
          }
@@ -170,8 +199,10 @@ namespace GamesView
          Categorie categorie = new Categorie();
          Console.Write("Entrez le nom de la nouvelle catégorie : ");
          categorie.Name = Console.ReadLine().ToLower();
-         service.CreateCat(categorie);
-
+         if (service.GetAll().Where(c => c.Name == categorie.Name).Count() == 0)
+         {
+            service.Create(categorie);
+         }
       }
    }
 }
